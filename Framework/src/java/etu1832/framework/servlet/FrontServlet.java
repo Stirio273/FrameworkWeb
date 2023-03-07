@@ -5,6 +5,7 @@
  */
 package etu1832.framework.servlet;
 
+import etu1832.framework.Mapping;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.RequestDispatcher;
@@ -19,6 +20,15 @@ import java.util.HashMap;
  * @author ONEF
  */
 public class FrontServlet extends HttpServlet {
+    HashMap<String, Mapping> MappingUrls = new HashMap<>();
+
+    public HashMap<String, Mapping> getMappingUrls() {
+        return MappingUrls;
+    }
+
+    public void setMappingUrls(HashMap<String, Mapping> MappingUrls) {
+        this.MappingUrls = MappingUrls;
+    }
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
