@@ -15,6 +15,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import utilitaires.Util;
 import java.util.HashMap;
+import java.util.Map;
+
 /**
  *
  * @author ONEF
@@ -29,14 +31,29 @@ public class FrontServlet extends HttpServlet {
     public void setMappingUrls(HashMap<String, Mapping> MappingUrls) {
         this.MappingUrls = MappingUrls;
     }
+    
+    @Override
+    public void init(){
+        try {
+            String path = this.getClass().getClassLoader().getResource("").getPath();
+            Util.setMappingUrls(this.getMappingUrls(), path, Util.getAllPackages(null, path, null));
+            System.out.println("HashMap");
+            for (Map.Entry<String, Mapping> entry : this.getMappingUrls().entrySet()) {
+                System.out.println(entry.getKey());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
      *
-     * @param request servlet request
+     * @param request  servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException      if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -45,16 +62,18 @@ public class FrontServlet extends HttpServlet {
             String string = data[i];
             System.out.println(string);
         }
+        
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the
+    // + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
      *
-     * @param request servlet request
+     * @param request  servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException      if an I/O error occurs
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -67,10 +86,10 @@ public class FrontServlet extends HttpServlet {
     /**
      * Handles the HTTP <code>POST</code> method.
      *
-     * @param request servlet request
+     * @param request  servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException      if an I/O error occurs
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)

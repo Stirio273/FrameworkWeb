@@ -29,6 +29,9 @@ public class Mapping {
         this.method = method;
     }
 
+    public Mapping() {
+    }
+
     public Mapping(String className, String method) {
         this.className = className;
         this.method = method;
