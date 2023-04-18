@@ -51,6 +51,15 @@ public class FrontServlet extends HttpServlet {
         }
     }
 
+    public void setAttributeRequest(HttpServletRequest request, ModelView mv) {
+        if (mv.getData() == null || mv.getData().size() == 0) {
+            return;
+        }
+        for (Map.Entry<String, Object> entry : mv.getData().entrySet()) {
+            request.setAttribute(entry.getKey(), entry.getValue());
+        }
+    }
+
     public Mapping getMapping(String url) throws Exception {
         if (this.MappingUrls.containsKey("/" + url)) {
             return this.MappingUrls.get("/" + url);
@@ -90,6 +99,7 @@ public class FrontServlet extends HttpServlet {
                 return new ModelView("index.html");
             }
             ModelView mv = callModelAndFunction(getMapping(data[data.length - 1]));
+            this.setAttributeRequest(request, mv);
             System.out.println(mv.getVue());
             return mv;
         } catch (Exception e) {

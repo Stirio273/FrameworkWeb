@@ -10,7 +10,8 @@ import connexion.utilisateur.*;
 import generalbdd.BDDObject;
 import java.sql.Connection;
 import java.util.Arrays;
-
+import java.util.List;
+import java.util.ArrayList;
 import etu1832.framework.ModelView;
 import etu1832.framework.annotation.RequestMapping;
 import generalbdd.annotation.*;
@@ -60,38 +61,10 @@ public class RouteNational {
         this.idType = idType;
     }
 
-    public void insert(Connection con) throws Exception {
-        boolean isNewConnexion = false;
-        if (con == null) {
-            con = new Connect(User.nom, User.password, User.base).getConnectPostgre();
-            isNewConnexion = true;
-        }
-        BDDObject dao = new BDDObject();
-        dao.insert(this, con, null);
-        if (isNewConnexion == true) {
-            con.commit();
-            con.close();
-        }
-    }
-
     @RequestMapping(path = "/rn-add")
     public ModelView getInsert() {
-        ModelView mv = new ModelView("index.jsp");
+        ModelView mv = new ModelView("add.jsp");
         return mv;
-    }
-
-    public void update(Connection con, String[] attributs) throws Exception {
-        boolean isNewConnexion = false;
-        if (con == null) {
-            con = new Connect(User.nom, User.password, User.base).getConnectPostgre();
-            isNewConnexion = true;
-        }
-        BDDObject dao = new BDDObject();
-        dao.update(this, attributs, null, con, null);
-        if (isNewConnexion == true) {
-            con.commit();
-            con.close();
-        }
     }
 
     @RequestMapping(path = "/rn-modify")
@@ -100,39 +73,18 @@ public class RouteNational {
         return mv;
     }
 
-    public RouteNational[] getAllRoutes(Connection con) throws Exception {
-        boolean isNewConnexion = false;
-        if (con == null) {
-            con = new Connect(User.nom, User.password, User.base).getConnectPostgre();
-            isNewConnexion = true;
-        }
-        BDDObject dao = new BDDObject();
-        Object[] o = dao.find(this, null, con, null);
-        if (isNewConnexion == true) {
-            con.commit();
-            con.close();
-        }
-        return Arrays.copyOf(o, o.length, RouteNational[].class);
-    }
-
-    @RequestMapping(path = "/rn-read")
+    @RequestMapping(path = "/rn-readAll")
     public ModelView getAll() {
+        List<RouteNational> list = new ArrayList<>();
+        list.add(new RouteNational(1, "RN1", 1));
+        list.add(new RouteNational(2, "RN2", 2));
+        list.add(new RouteNational(3, "RN3", 1));
+        list.add(new RouteNational(4, "RN4", 3));
+        list.add(new RouteNational(5, "RN5", 2));
+        list.add(new RouteNational(6, "RN6", 1));
         ModelView mv = new ModelView("all.jsp");
+        mv.addItem("listeRN", list);
         return mv;
-    }
-
-    public void supprimer(Connection con) throws Exception {
-        boolean isNewConnexion = false;
-        if (con == null) {
-            con = new Connect(User.nom, User.password, User.base).getConnectPostgre();
-            isNewConnexion = true;
-        }
-        BDDObject dao = new BDDObject();
-        dao.delete(this, null, con, null);
-        if (isNewConnexion == true) {
-            con.commit();
-            con.close();
-        }
     }
 
     @RequestMapping(path = "/rn-remove")
