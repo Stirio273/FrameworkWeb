@@ -67,11 +67,26 @@ public class FrontServlet extends HttpServlet {
         throw new Exception("Cette URL n' est associee a aucune classe");
     }
 
-    public ModelView callModelAndFunction(Mapping map) throws Exception {
+    public void fillAttributeOfObject(Object o, HttpServletRequest request) throws Exception {
+        Field[] attributs = o.getClass().getDeclaredFields();
+        for (Field field : attributs) {
+            field.setAccessible(true);
+            String value = request.getParameter(field.getName());
+            if (value != null) {
+                field.set(o, Util.castString(value, field.getType()));
+            }
+        }
+    }
+
+    public Object instanceObject(Mapping map) throws Exception {
         Class c = Class.forName(map.getClassName());
-        Method fonction = c.getDeclaredMethod(map.getMethod(), (Class[]) null);
-        System.out.println("Fonction " + fonction.getName());
         Object o = c.newInstance();
+        return o;
+    }
+
+    public ModelView callModelAndFunction(Object o, Mapping map) throws Exception {
+        Method fonction = o.getClass().getDeclaredMethod(map.getMethod(), (Class[]) null);
+        System.out.println("Fonction " + fonction.getName());
         ModelView mv = (ModelView) fonction.invoke(o, (Object[]) null);
         System.out.println("Vue " + mv.getVue());
         return mv;
@@ -98,7 +113,10 @@ public class FrontServlet extends HttpServlet {
             if (data[data.length - 1].equalsIgnoreCase("")) {
                 return new ModelView("index.html");
             }
-            ModelView mv = callModelAndFunction(getMapping(data[data.length - 1]));
+            Mapping map = getMapping(data[data.length - 1]);
+            Object o = this.instanceObject(map);
+            this.fillAttributeOfObject(o, request);
+            ModelView mv = callModelAndFunction(o, map);
             this.setAttributeRequest(request, mv);
             System.out.println(mv.getVue());
             return mv;
@@ -137,7 +155,9 @@ public class FrontServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        ModelView vue = processRequest(request, response);
+        RequestDispatcher dispa = request.getRequestDispatcher("/WEB-INF/vues/" + vue.getVue());
+        dispa.forward(request, response);
     }
 
     /**

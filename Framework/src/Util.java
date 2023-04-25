@@ -13,12 +13,42 @@ import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
 /**
  *
  * @author ONEF
  */
 public class Util {
+    public static Object castString(Object o, Class<?> classe) throws Exception {
+        String texte = o.toString();
+        switch (classe.getSimpleName()) {
+            case "Date":
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                if (texte.indexOf('T') != -1) {
+                    sdf = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm");
+                }
+                Date d = sdf.parse(texte);
+                return d;
+
+            case "int":
+                return Integer.parseInt(texte);
+
+            case "double":
+                return Double.parseDouble(texte);
+
+            case "boolean":
+                return Boolean.parseBoolean(texte);
+
+            case "float":
+                return Float.parseFloat(texte);
+
+            default:
+                return texte;
+        }
+    }
+
     public static List<String> getAllPackages(List<String> packages, String path, String debut) {
         String concat = ".";
         if (packages == null)

@@ -1,6 +1,6 @@
-<%@ page import="modele.RouteNational,java.util.*" %>
+<%@ page import="modele.Employe,java.util.*" %>
 <%
-List<RouteNational> liste = (List<RouteNational>) request.getAttribute("listeRN");
+List<Employe> liste = (List<Employe>) request.getAttribute("listeEmployes");
 %>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
