@@ -106,6 +106,24 @@ public class Employe {
         return mv;
     }
 
+    @RequestMapping(path = "/emp-detail")
+    public ModelView findById(int id) {
+        List<Employe> list = new ArrayList<>();
+        list.add(new Employe(1, "Rakoto", new Date(), 1000));
+        list.add(new Employe(2, "Rabe", new Date(), 1500));
+        list.add(new Employe(3, "Rasoa", new Date(), 2450));
+        list.add(new Employe(4, "Faniry", new Date(), 800));
+        list.add(new Employe(5, "Safidy", new Date(), 1200));
+        list.add(new Employe(6, "Ando", new Date(), 3000));
+        ModelView mv = new ModelView("details.jsp");
+        for (Employe employe : list) {
+            if (employe.getId() == id) {
+                mv.addItem("employe", employe);
+            }
+        }
+        return mv;
+    }
+
     @RequestMapping(path = "/emp-remove")
     public ModelView getSupprimer() {
         ModelView mv = new ModelView("home.jsp");

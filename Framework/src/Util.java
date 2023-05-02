@@ -82,6 +82,7 @@ public class Util {
                     key = methode.getAnnotation(RequestMapping.class).path();
                     map.setClassName(modeles.get(n).getName());
                     map.setMethod(methode.getName());
+                    map.setParamsType(methode.getParameterTypes());
                     urls.put(key, map);
                 }
             }

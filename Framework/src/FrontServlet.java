@@ -84,12 +84,24 @@ public class FrontServlet extends HttpServlet {
         return o;
     }
 
-    public ModelView callModelAndFunction(Object o, Mapping map) throws Exception {
-        Method fonction = o.getClass().getDeclaredMethod(map.getMethod(), (Class[]) null);
+    public ModelView callModelAndFunction(Object o, Method fonction, Object[] params, Mapping map) throws Exception {
         System.out.println("Fonction " + fonction.getName());
-        ModelView mv = (ModelView) fonction.invoke(o, (Object[]) null);
+        ModelView mv = (ModelView) fonction.invoke(o, params);
         System.out.println("Vue " + mv.getVue());
         return mv;
+    }
+
+    public Object[] fillArgumentsOfFonction(Method fonction, HttpServletRequest request) throws Exception {
+        Parameter[] arguments = fonction.getParameters();
+        Object[] params = new Object[arguments.length];
+        for (int i = 0; i < arguments.length; i++) {
+            String value = request.getParameter(arguments[i].getName());
+            System.out.println(arguments[i].getName());
+            if (value != null) {
+                params[i] = Util.castString(value, arguments[i].getType());
+            }
+        }
+        return params;
     }
 
     /**
@@ -115,8 +127,10 @@ public class FrontServlet extends HttpServlet {
             }
             Mapping map = getMapping(data[data.length - 1]);
             Object o = this.instanceObject(map);
+            Method fonction = o.getClass().getDeclaredMethod(map.getMethod(), map.getParamsType());
             this.fillAttributeOfObject(o, request);
-            ModelView mv = callModelAndFunction(o, map);
+            Object[] params = this.fillArgumentsOfFonction(fonction, request);
+            ModelView mv = callModelAndFunction(o, fonction, params, map);
             this.setAttributeRequest(request, mv);
             System.out.println(mv.getVue());
             return mv;

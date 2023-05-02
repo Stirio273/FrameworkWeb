@@ -7,7 +7,7 @@ IF NOT EXIST WebApplication/build/WEB-INF/lib. mkdir WebApplication\build\WEB-IN
 copy WebGeneralizer.jar WebApplication\build\WEB-INF\lib
 IF NOT EXIST WebApplication/build/WEB-INF/classes. mkdir WebApplication\build\WEB-INF\classes
 SET CLASSPATH=.\WebApplication\build\WEB-INF\lib\WebGeneralizer.jar
-javac -d WebApplication/build/WEB-INF/classes WebApplication/src/*.java
+javac -parameters -d WebApplication/build/WEB-INF/classes WebApplication/src/*.java
 cd WebApplication\build
 jar -cf ../../WebApplication.war WEB-INF
 cd ../../

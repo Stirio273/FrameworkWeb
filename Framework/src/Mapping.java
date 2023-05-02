@@ -12,6 +12,7 @@ package etu1832.framework;
 public class Mapping {
     String className;
     String method;
+    Class<?>[] paramsType;
 
     public String getClassName() {
         return className;
@@ -27,6 +28,14 @@ public class Mapping {
 
     public void setMethod(String method) {
         this.method = method;
+    }
+
+    public Class<?>[] getParamsType() {
+        return paramsType;
+    }
+
+    public void setParamsType(Class<?>[] paramsType) {
+        this.paramsType = paramsType;
     }
 
     public Mapping() {
