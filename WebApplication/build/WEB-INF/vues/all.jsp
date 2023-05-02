@@ -14,7 +14,7 @@ List<Employe> liste = (List<Employe>) request.getAttribute("listeEmployes");
         <h1>All</h1>
         <ul>
             <% for(int i = 0; i < liste.size(); i++) { %>
-                <li><% out.println(liste.get(i).getNom()); %></li>
+                <li><a href="emp-detail?id=<% out.println(liste.get(i).getId()); %>"><% out.println(liste.get(i).getNom()); %></a></li>
             <% } %>
         </ul>
     </body>
