@@ -5,9 +5,13 @@
  */
 package etu1832.framework.servlet;
 
+import etu1832.framework.FileUpload;
 import etu1832.framework.Mapping;
 import etu1832.framework.ModelView;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.*;
 import javax.servlet.RequestDispatcher;
@@ -15,6 +19,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+import javax.servlet.annotation.MultipartConfig;
 import utilitaires.Util;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +29,7 @@ import java.util.Map;
  *
  * @author ONEF
  */
+@MultipartConfig
 public class FrontServlet extends HttpServlet {
     HashMap<String, Mapping> MappingUrls = new HashMap<>();
 
@@ -51,6 +58,29 @@ public class FrontServlet extends HttpServlet {
         }
     }
 
+    public byte[] partToByte(Part part) throws Exception {
+        InputStream is = part.getInputStream();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int byteReader;
+        while ((byteReader = is.read(buffer)) != -1) {
+            baos.write(buffer, 0, byteReader);
+        }
+        byte[] byteArray = baos.toByteArray();
+        baos.close();
+        is.close();
+        return byteArray;
+    }
+
+    public void manageFileUpload(Object o, Field attribut, Part part) throws Exception {
+        attribut.setAccessible(true);
+        System.out.println(part.getSubmittedFileName());
+        if (part.getSize() > 0) {
+            byte[] b = this.partToByte(part);
+            attribut.set(o, new FileUpload(part.getSubmittedFileName(), b));
+        }
+    }
+
     public void setAttributeRequest(HttpServletRequest request, ModelView mv) {
         if (mv.getData() == null || mv.getData().size() == 0) {
             return;
@@ -71,9 +101,17 @@ public class FrontServlet extends HttpServlet {
         Field[] attributs = o.getClass().getDeclaredFields();
         for (Field field : attributs) {
             field.setAccessible(true);
-            String value = request.getParameter(field.getName());
-            if (value != null) {
-                field.set(o, Util.castString(value, field.getType()));
+            if (field.getType() == FileUpload.class) {
+                try {
+                    this.manageFileUpload(o, field, request.getPart(field.getName()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                String value = request.getParameter(field.getName());
+                if (value != null) {
+                    field.set(o, Util.castString(value, field.getType()));
+                }
             }
         }
     }
