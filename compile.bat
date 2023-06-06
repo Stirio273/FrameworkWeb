@@ -9,6 +9,6 @@ IF NOT EXIST WebApplication/build/WEB-INF/classes. mkdir WebApplication\build\WE
 SET CLASSPATH=.\WebApplication\build\WEB-INF\lib\WebGeneralizer.jar
 javac -parameters -d WebApplication/build/WEB-INF/classes WebApplication/src/*.java
 cd WebApplication\build
-jar -cf ../../WebApplication.war WEB-INF
+jar -cf ../../WebApplication.war .
 cd ../../
 copy WebApplication.war C:\"Program Files"\"Apache Software Foundation"\"Tomcat 8.5"\webapps
