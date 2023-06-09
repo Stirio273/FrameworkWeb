@@ -6,7 +6,7 @@
 package utilitaires;
 
 import etu1832.framework.Mapping;
-import etu1832.framework.annotation.RequestMapping;
+import etu1832.framework.annotation.*;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -21,6 +21,22 @@ import java.text.SimpleDateFormat;
  * @author ONEF
  */
 public class Util {
+    public static void resetObject(Object o) throws Exception {
+        Field[] attributs = o.getClass().getDeclaredFields();
+        for (Field field : attributs) {
+            field.setAccessible(true);
+            if (field.getType() == int.class || field.getType() == double.class || field.getType() == float.class
+                    || field.getType() == long.class || field.getType() == byte.class
+                    || field.getType() == short.class || field.getType() == char.class) {
+                field.set(o, 0);
+            } else if (field.getType() == boolean.class) {
+                field.set(o, false);
+            } else {
+                field.set(o, null);
+            }
+        }
+    }
+
     public static Object castString(Object o, Class<?> classe) throws Exception {
         String texte = o.toString();
         switch (classe.getSimpleName()) {
@@ -69,13 +85,23 @@ public class Util {
         return packages;
     }
 
-    public static void setMappingUrls(HashMap<String, Mapping> urls, String path, List<String> packages)
+    public static void manageSingleton(HashMap<String, Object> singleton, Class<?> classe) {
+        if (classe.getAnnotation(Scope.class) != null) {
+            if (classe.getAnnotation(Scope.class).scope() == Scope.Singleton) {
+                singleton.put(classe.getName(), null);
+            }
+        }
+    }
+
+    public static void setFieldsFrontServlet(HashMap<String, Mapping> urls, HashMap<String, Object> singleton,
+            String path, List<String> packages)
             throws Exception {
         for (int i = 0; i < packages.size(); i++) {
             List<Class<?>> modeles = getAllClasses(packages.get(i), path);
             List<Method> methodes = new ArrayList<>();
             String key = "";
             for (int n = 0; n < modeles.size(); n++) {
+                manageSingleton(singleton, modeles.get(n));
                 methodes = listAllMethods(modeles.get(n), RequestMapping.class);
                 for (Method methode : methodes) {
                     Mapping map = new Mapping();

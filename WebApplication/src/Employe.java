@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Date;
 import etu1832.framework.ModelView;
-import etu1832.framework.annotation.RequestMapping;
+import etu1832.framework.annotation.*;
 import generalbdd.annotation.*;
 
 /**
@@ -22,6 +22,7 @@ import generalbdd.annotation.*;
  * @author ONEF
  */
 
+@Scope(scope = Scope.Singleton)
 @Table(nom = "employe")
 public class Employe {
     @PrimaryKey
@@ -63,6 +64,7 @@ public class Employe {
     }
 
     public Employe() {
+        System.out.println("1 instance creee");
     }
 
     public Employe(int id, String nom, Date dateNaissance, double salaire) {

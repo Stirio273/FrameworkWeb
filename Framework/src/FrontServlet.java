@@ -32,6 +32,15 @@ import java.util.Map;
 @MultipartConfig
 public class FrontServlet extends HttpServlet {
     HashMap<String, Mapping> MappingUrls = new HashMap<>();
+    HashMap<String, Object> singleton = new HashMap<>();
+
+    public HashMap<String, Object> getSingleton() {
+        return singleton;
+    }
+
+    public void setSingleton(HashMap<String, Object> singleton) {
+        this.singleton = singleton;
+    }
 
     public HashMap<String, Mapping> getMappingUrls() {
         return MappingUrls;
@@ -47,11 +56,15 @@ public class FrontServlet extends HttpServlet {
 
             String path = this.getClass().getClassLoader().getResource("").getPath();
             path = path.replaceAll("%20", " ");
-            Util.setMappingUrls(this.getMappingUrls(), path,
+            Util.setFieldsFrontServlet(this.getMappingUrls(), this.getSingleton(), path,
                     Util.getAllPackages(null, path.substring(1, path.length()), null));
-            System.out.println("HashMap");
+            System.out.println("HashMap URL");
             for (Map.Entry<String, Mapping> entry : this.getMappingUrls().entrySet()) {
                 System.out.println(entry.getKey() + "|" + entry.getValue().getMethod());
+            }
+            System.out.println("HashMap Singleton");
+            for (Map.Entry<String, Object> entry : this.getSingleton().entrySet()) {
+                System.out.println(entry.getKey());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -117,7 +130,16 @@ public class FrontServlet extends HttpServlet {
     }
 
     public Object instanceObject(Mapping map) throws Exception {
-        Class c = Class.forName(map.getClassName());
+        if (this.singleton.containsKey(map.getClassName())) {
+            if (this.singleton.get(map.getClassName()) != null) {
+                Util.resetObject(this.singleton.get(map.getClassName()));
+                return this.singleton.get(map.getClassName());
+            } else {
+                this.singleton.replace(map.getClassName(), Class.forName(map.getClassName()).newInstance());
+                return this.singleton.get(map.getClassName());
+            }
+        }
+        Class<?> c = Class.forName(map.getClassName());
         Object o = c.newInstance();
         return o;
     }
