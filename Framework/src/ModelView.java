@@ -15,6 +15,7 @@ import java.util.Map;
 public class ModelView {
     String vue;
     HashMap<String, Object> data;
+    HashMap<String, Object> session;
 
     public String getVue() {
         return vue;
@@ -32,9 +33,18 @@ public class ModelView {
         this.data = data;
     }
 
+    public HashMap<String, Object> getSession() {
+        return session;
+    }
+
+    public void setSession(HashMap<String, Object> session) {
+        this.session = session;
+    }
+
     public ModelView(String vue) {
         this.vue = vue;
         this.data = new HashMap<>();
+        this.session = new HashMap<>();
     }
 
     public ModelView(String vue, HashMap<String, Object> data) {
@@ -42,7 +52,11 @@ public class ModelView {
         this.data = data;
     }
 
-    public void addItem(String key, Object value) {
+    public void addItemData(String key, Object value) {
         this.data.put(key, value);
+    }
+
+    public void addItemSession(String key, Object value) {
+        this.session.put(key, value);
     }
 }

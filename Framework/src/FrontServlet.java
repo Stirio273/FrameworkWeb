@@ -8,6 +8,7 @@ package etu1832.framework.servlet;
 import etu1832.framework.FileUpload;
 import etu1832.framework.Mapping;
 import etu1832.framework.ModelView;
+import etu1832.framework.annotation.Authentification;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -19,11 +20,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 import javax.servlet.annotation.MultipartConfig;
 import utilitaires.Util;
+
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 /**
  *
@@ -53,7 +58,6 @@ public class FrontServlet extends HttpServlet {
     @Override
     public void init() {
         try {
-
             String path = this.getClass().getClassLoader().getResource("").getPath();
             path = path.replaceAll("%20", " ");
             Util.setFieldsFrontServlet(this.getMappingUrls(), this.getSingleton(), path,
@@ -69,6 +73,23 @@ public class FrontServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void sessionFromMVToHttp(ModelView mv, HttpSession session) {
+        if (mv.getSession() == null || mv.getSession().isEmpty()) {
+            return;
+        }
+        Enumeration<String> params = this.getInitParameterNames();
+        while (params.hasMoreElements()) {
+            String key = params.nextElement();
+            if (key == "profile") {
+                session.setAttribute(this.getInitParameter(key),
+                        mv.getSession().get(this.getInitParameter(key)));
+            } else {
+                session.setAttribute(key, mv.getSession().get(key));
+            }
+        }
+
     }
 
     public byte[] partToByte(Part part) throws Exception {
@@ -164,6 +185,21 @@ public class FrontServlet extends HttpServlet {
         return params;
     }
 
+    public void authentificate(HttpServletRequest req, Method fonction) throws Exception {
+        if (fonction.getAnnotation(Authentification.class) != null) {
+            System.out.println(fonction.getAnnotation(Authentification.class)
+                    .profile());
+            System.out.println(req.getSession().getAttribute(this.getInitParameter("profile")));
+            if (req.getSession().getAttribute(this.getInitParameter("profile")) == null || fonction
+                    .getAnnotation(Authentification.class)
+                    .profile()
+                    .equalsIgnoreCase(
+                            req.getSession().getAttribute(this.getInitParameter("profile")).toString()) == false) {
+                throw new Exception("Acces interdit");
+            }
+        }
+    }
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -188,15 +224,20 @@ public class FrontServlet extends HttpServlet {
             Mapping map = getMapping(data[data.length - 1]);
             Object o = this.instanceObject(map);
             Method fonction = o.getClass().getDeclaredMethod(map.getMethod(), map.getParamsType());
+            this.authentificate(request, fonction);
             this.fillAttributeOfObject(o, request);
             Object[] params = this.fillArgumentsOfFonction(fonction, request);
             ModelView mv = callModelAndFunction(o, fonction, params, map);
+            this.sessionFromMVToHttp(mv, request.getSession());
             this.setAttributeRequest(request, mv);
             System.out.println(mv.getVue());
             return mv;
         } catch (Exception e) {
             e.printStackTrace();
-            return new ModelView("error.html");
+            ModelView error = new ModelView("error.jsp");
+            error.addItemData("message", e.getMessage());
+            this.setAttributeRequest(request, error);
+            return error;
         }
     }
 

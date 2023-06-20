@@ -82,6 +82,7 @@ public class Employe {
         System.out.println("Salaire " + this.salaire);
     }
 
+    @Authentification(profile = "admin")
     @RequestMapping(path = "/emp-add")
     public ModelView getInsert() {
         ModelView mv = new ModelView("form.jsp");
@@ -104,7 +105,7 @@ public class Employe {
         list.add(new Employe(5, "Safidy", new Date(), 1200));
         list.add(new Employe(6, "Ando", new Date(), 3000));
         ModelView mv = new ModelView("all.jsp");
-        mv.addItem("listeEmployes", list);
+        mv.addItemData("listeEmployes", list);
         return mv;
     }
 
@@ -120,7 +121,7 @@ public class Employe {
         ModelView mv = new ModelView("details.jsp");
         for (Employe employe : list) {
             if (employe.getId() == id) {
-                mv.addItem("employe", employe);
+                mv.addItemData("employe", employe);
             }
         }
         return mv;

@@ -29,6 +29,14 @@
     <servlet>
         <servlet-name>frontservlet</servlet-name>
         <servlet-class>etu1832.framework.servlet.FrontServlet</servlet-class>
+        <init-param>
+            <param-name>isConnected</param-name>
+            <param-value>false</param-value>
+        </init-param>
+        <init-param>
+            <param-name>profile</param-name>
+            <param-value>role</param-value>
+        </init-param>
     </servlet>
     <servlet-mapping>
         <servlet-name>frontservlet</servlet-name>
