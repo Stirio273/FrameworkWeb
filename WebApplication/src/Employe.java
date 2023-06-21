@@ -110,7 +110,7 @@ public class Employe {
     }
 
     @RequestMapping(path = "/emp-detail")
-    public ModelView findById(int id) {
+    public ModelView findById(@SessionAttribute("id") int id) {
         List<Employe> list = new ArrayList<>();
         list.add(new Employe(1, "Rakoto", new Date(), 1000));
         list.add(new Employe(2, "Rabe", new Date(), 1500));

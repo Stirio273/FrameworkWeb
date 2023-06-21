@@ -9,6 +9,7 @@ import etu1832.framework.FileUpload;
 import etu1832.framework.Mapping;
 import etu1832.framework.ModelView;
 import etu1832.framework.annotation.Authentification;
+import etu1832.framework.annotation.SessionAttribute;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -79,17 +80,14 @@ public class FrontServlet extends HttpServlet {
         if (mv.getSession() == null || mv.getSession().isEmpty()) {
             return;
         }
-        Enumeration<String> params = this.getInitParameterNames();
-        while (params.hasMoreElements()) {
-            String key = params.nextElement();
-            if (key == "profile") {
-                session.setAttribute(this.getInitParameter(key),
-                        mv.getSession().get(this.getInitParameter(key)));
+        for (Map.Entry<String, Object> entry : mv.getSession().entrySet()) {
+            if (entry.getKey() == "profile") {
+                session.setAttribute(this.getInitParameter(entry.getKey()),
+                        mv.getSession().get(this.getInitParameter(entry.getKey())));
             } else {
-                session.setAttribute(key, mv.getSession().get(key));
+                session.setAttribute(entry.getKey(), mv.getSession().get(entry.getKey()));
             }
         }
-
     }
 
     public byte[] partToByte(Part part) throws Exception {
@@ -176,7 +174,13 @@ public class FrontServlet extends HttpServlet {
         Parameter[] arguments = fonction.getParameters();
         Object[] params = new Object[arguments.length];
         for (int i = 0; i < arguments.length; i++) {
-            String value = request.getParameter(arguments[i].getName());
+            String value = null;
+            if (arguments[i].getAnnotation(SessionAttribute.class) != null) {
+                value = request.getSession().getAttribute(arguments[i].getAnnotation(SessionAttribute.class).value())
+                        .toString();
+            } else {
+                value = request.getParameter(arguments[i].getName());
+            }
             System.out.println(arguments[i].getName());
             if (value != null) {
                 params[i] = Util.castString(value, arguments[i].getType());
