@@ -75,7 +75,6 @@ public class Login {
             ModelView mv = new ModelView("home.jsp");
             mv.addItemSession("isConnected", true);
             mv.addItemSession("role", user.profile);
-            mv.addItemSession("id", 3);
             return mv;
         }
     }
