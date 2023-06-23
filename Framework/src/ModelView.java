@@ -16,6 +16,7 @@ public class ModelView {
     String vue;
     HashMap<String, Object> data;
     HashMap<String, Object> session;
+    boolean JSON;
 
     public String getVue() {
         return vue;
@@ -39,6 +40,14 @@ public class ModelView {
 
     public void setSession(HashMap<String, Object> session) {
         this.session = session;
+    }
+
+    public boolean isJSON() {
+        return JSON;
+    }
+
+    public void setJSON(boolean jSON) {
+        JSON = jSON;
     }
 
     public ModelView(String vue) {

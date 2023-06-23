@@ -105,12 +105,13 @@ public class Employe {
         list.add(new Employe(5, "Safidy", new Date(), 1200));
         list.add(new Employe(6, "Ando", new Date(), 3000));
         ModelView mv = new ModelView("all.jsp");
+        mv.setJSON(true);
         mv.addItemData("listeEmployes", list);
         return mv;
     }
 
     @RequestMapping(path = "/emp-detail")
-    public ModelView findById(@SessionAttribute("id") int id) {
+    public ModelView findById(int id) {
         List<Employe> list = new ArrayList<>();
         list.add(new Employe(1, "Rakoto", new Date(), 1000));
         list.add(new Employe(2, "Rabe", new Date(), 1500));

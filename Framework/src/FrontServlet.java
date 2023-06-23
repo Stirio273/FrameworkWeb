@@ -170,6 +170,17 @@ public class FrontServlet extends HttpServlet {
         return mv;
     }
 
+    public void sendResponse(HttpServletRequest request, HttpServletResponse response, ModelView mv)
+            throws ServletException, IOException {
+        if (mv.isJSON() == true) {
+            String json = Util.convertObjectToJSON(mv.getData());
+            PrintWriter out = response.getWriter();
+            out.println(json);
+        } else {
+            this.dispatch(request, response, mv.getVue());
+        }
+    }
+
     public Object[] fillArgumentsOfFonction(Method fonction, HttpServletRequest request) throws Exception {
         Parameter[] arguments = fonction.getParameters();
         Object[] params = new Object[arguments.length];
@@ -213,7 +224,7 @@ public class FrontServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException      if an I/O error occurs
      */
-    protected ModelView processRequest(HttpServletRequest request, HttpServletResponse response)
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String[] data = Util.retrieveDataFromURL(request.getRequestURI());
         System.out.println("URL du Client");
@@ -223,7 +234,8 @@ public class FrontServlet extends HttpServlet {
         }
         try {
             if (data[data.length - 1].equalsIgnoreCase("")) {
-                return new ModelView("index.html");
+                this.dispatch(request, response, "index.html");
+                return;
             }
             Mapping map = getMapping(data[data.length - 1]);
             Object o = this.instanceObject(map);
@@ -235,13 +247,15 @@ public class FrontServlet extends HttpServlet {
             this.sessionFromMVToHttp(mv, request.getSession());
             this.setAttributeRequest(request, mv);
             System.out.println(mv.getVue());
-            return mv;
+            this.sendResponse(request, response, mv);
+            return;
         } catch (Exception e) {
             e.printStackTrace();
             ModelView error = new ModelView("error.jsp");
             error.addItemData("message", e.getMessage());
             this.setAttributeRequest(request, error);
-            return error;
+            this.dispatch(request, response, error.getVue());
+            return;
         }
     }
 
@@ -258,9 +272,8 @@ public class FrontServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        ModelView vue = processRequest(request, response);
-        RequestDispatcher dispa = request.getRequestDispatcher("/WEB-INF/vues/" + vue.getVue());
-        dispa.forward(request, response);
+        processRequest(request, response);
+
     }
 
     /**
@@ -274,8 +287,13 @@ public class FrontServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        ModelView vue = processRequest(request, response);
-        RequestDispatcher dispa = request.getRequestDispatcher("/WEB-INF/vues/" + vue.getVue());
+        processRequest(request, response);
+
+    }
+
+    public void dispatch(HttpServletRequest request, HttpServletResponse response, String vue)
+            throws ServletException, IOException {
+        RequestDispatcher dispa = request.getRequestDispatcher("/WEB-INF/vues/" + vue);
         dispa.forward(request, response);
     }
 

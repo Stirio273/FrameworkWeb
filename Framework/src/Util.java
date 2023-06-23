@@ -15,12 +15,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import com.google.gson.Gson;
 
 /**
  *
  * @author ONEF
  */
 public class Util {
+    public static Object convertJSONToObject(String json, Class<?> classe) {
+        Gson gson = new Gson();
+        return gson.fromJson(json, classe);
+    }
+
+    public static String convertObjectToJSON(Object o) {
+        Gson gson = new Gson();
+        return gson.toJson(o);
+    }
+
     public static void resetObject(Object o) throws Exception {
         Field[] attributs = o.getClass().getDeclaredFields();
         for (Field field : attributs) {
