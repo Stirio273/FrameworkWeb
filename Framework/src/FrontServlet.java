@@ -9,6 +9,7 @@ import etu1832.framework.FileUpload;
 import etu1832.framework.Mapping;
 import etu1832.framework.ModelView;
 import etu1832.framework.annotation.Authentification;
+import etu1832.framework.annotation.ResponseBody;
 import etu1832.framework.annotation.SessionAttribute;
 
 import java.io.ByteArrayOutputStream;
@@ -76,16 +77,18 @@ public class FrontServlet extends HttpServlet {
         }
     }
 
-    public void sessionFromMVToHttp(ModelView mv, HttpSession session) {
-        if (mv.getSession() == null || mv.getSession().isEmpty()) {
-            return;
-        }
-        for (Map.Entry<String, Object> entry : mv.getSession().entrySet()) {
-            if (entry.getKey() == "profile") {
-                session.setAttribute(this.getInitParameter(entry.getKey()),
-                        mv.getSession().get(this.getInitParameter(entry.getKey())));
-            } else {
-                session.setAttribute(entry.getKey(), mv.getSession().get(entry.getKey()));
+    public void sessionFromMVToHttp(Object mv, HttpSession session) {
+        if (mv instanceof ModelView) {
+            if (((ModelView) mv).getSession() == null || ((ModelView) mv).getSession().isEmpty()) {
+                return;
+            }
+            for (Map.Entry<String, Object> entry : ((ModelView) mv).getSession().entrySet()) {
+                if (entry.getKey() == "profile") {
+                    session.setAttribute(this.getInitParameter(entry.getKey()),
+                            ((ModelView) mv).getSession().get(this.getInitParameter(entry.getKey())));
+                } else {
+                    session.setAttribute(entry.getKey(), ((ModelView) mv).getSession().get(entry.getKey()));
+                }
             }
         }
     }
@@ -113,12 +116,14 @@ public class FrontServlet extends HttpServlet {
         }
     }
 
-    public void setAttributeRequest(HttpServletRequest request, ModelView mv) {
-        if (mv.getData() == null || mv.getData().size() == 0) {
-            return;
-        }
-        for (Map.Entry<String, Object> entry : mv.getData().entrySet()) {
-            request.setAttribute(entry.getKey(), entry.getValue());
+    public void setAttributeRequest(HttpServletRequest request, Object mv) {
+        if (mv instanceof ModelView) {
+            if (((ModelView) mv).getData() == null || ((ModelView) mv).getData().size() == 0) {
+                return;
+            }
+            for (Map.Entry<String, Object> entry : ((ModelView) mv).getData().entrySet()) {
+                request.setAttribute(entry.getKey(), entry.getValue());
+            }
         }
     }
 
@@ -163,21 +168,35 @@ public class FrontServlet extends HttpServlet {
         return o;
     }
 
-    public ModelView callModelAndFunction(Object o, Method fonction, Object[] params, Mapping map) throws Exception {
+    public Object callModelAndFunction(Object o, Method fonction, Object[] params, Mapping map) throws Exception {
         System.out.println("Fonction " + fonction.getName());
-        ModelView mv = (ModelView) fonction.invoke(o, params);
-        System.out.println("Vue " + mv.getVue());
-        return mv;
+        Object resultat = fonction.invoke(o, params);
+        if (resultat instanceof ModelView) {
+            System.out.println("Vue " + ((ModelView) resultat).getVue());
+        }
+        return resultat;
     }
 
-    public void sendResponse(HttpServletRequest request, HttpServletResponse response, ModelView mv)
-            throws ServletException, IOException {
-        if (mv.isJSON() == true) {
-            String json = Util.convertObjectToJSON(mv.getData());
+    public void sendResponse(HttpServletRequest request, HttpServletResponse response, Object mv,
+            boolean isResponseBody)
+            throws ServletException, IOException, Exception {
+        if (mv instanceof ModelView) {
+            if (((ModelView) mv).isJSON() == true) {
+                response.setContentType("application/json");
+                String json = Util.convertObjectToJSON(((ModelView) mv).getData());
+                PrintWriter out = response.getWriter();
+                out.println(json);
+                out.flush();
+            } else {
+                this.dispatch(request, response, ((ModelView) mv).getVue());
+            }
+        } else if (isResponseBody == true) {
+            System.out.println("Response Body");
+            response.setContentType("application/json");
+            String json = Util.convertObjectToJSON(mv);
             PrintWriter out = response.getWriter();
             out.println(json);
-        } else {
-            this.dispatch(request, response, mv.getVue());
+            out.flush();
         }
     }
 
@@ -215,6 +234,10 @@ public class FrontServlet extends HttpServlet {
         }
     }
 
+    public boolean isResponseBody(Method fonction) {
+        return fonction.getAnnotation(ResponseBody.class) != null;
+    }
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -243,11 +266,13 @@ public class FrontServlet extends HttpServlet {
             this.authentificate(request, fonction);
             this.fillAttributeOfObject(o, request);
             Object[] params = this.fillArgumentsOfFonction(fonction, request);
-            ModelView mv = callModelAndFunction(o, fonction, params, map);
-            this.sessionFromMVToHttp(mv, request.getSession());
-            this.setAttributeRequest(request, mv);
-            System.out.println(mv.getVue());
-            this.sendResponse(request, response, mv);
+            Object reponse = callModelAndFunction(o, fonction, params, map);
+            this.sessionFromMVToHttp(reponse, request.getSession());
+            this.setAttributeRequest(request, reponse);
+            if (reponse instanceof ModelView) {
+                System.out.println(((ModelView) reponse).getVue());
+            }
+            this.sendResponse(request, response, reponse, this.isResponseBody(fonction));
             return;
         } catch (Exception e) {
             e.printStackTrace();

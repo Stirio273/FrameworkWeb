@@ -95,8 +95,9 @@ public class Employe {
         return mv;
     }
 
+    @ResponseBody
     @RequestMapping(path = "/emp-readAll")
-    public ModelView getAll() {
+    public List<Employe> getAll() {
         List<Employe> list = new ArrayList<>();
         list.add(new Employe(1, "Rakoto", new Date(), 1000));
         list.add(new Employe(2, "Rabe", new Date(), 1500));
@@ -107,7 +108,7 @@ public class Employe {
         ModelView mv = new ModelView("all.jsp");
         mv.setJSON(true);
         mv.addItemData("listeEmployes", list);
-        return mv;
+        return list;
     }
 
     @RequestMapping(path = "/emp-detail")
