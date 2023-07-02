@@ -13,6 +13,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Date;
+
+import etu1832.framework.Model;
 import etu1832.framework.ModelView;
 import etu1832.framework.annotation.*;
 import generalbdd.annotation.*;
@@ -24,7 +26,7 @@ import generalbdd.annotation.*;
 
 @Scope(scope = Scope.Singleton)
 @Table(nom = "employe")
-public class Employe {
+public class Employe extends Model {
     @PrimaryKey
     int id;
     String nom;
@@ -64,10 +66,12 @@ public class Employe {
     }
 
     public Employe() {
+        super();
         System.out.println("1 instance creee");
     }
 
     public Employe(int id, String nom, Date dateNaissance, double salaire) {
+        super();
         this.id = id;
         this.nom = nom;
         this.dateNaissance = dateNaissance;
@@ -111,8 +115,9 @@ public class Employe {
         return list;
     }
 
+    @SessionAttribute
     @RequestMapping(path = "/emp-detail")
-    public ModelView findById(int id) {
+    public ModelView findById(@RequestParams("idE") int id) {
         List<Employe> list = new ArrayList<>();
         list.add(new Employe(1, "Rakoto", new Date(), 1000));
         list.add(new Employe(2, "Rabe", new Date(), 1500));
@@ -121,6 +126,8 @@ public class Employe {
         list.add(new Employe(5, "Safidy", new Date(), 1200));
         list.add(new Employe(6, "Ando", new Date(), 3000));
         ModelView mv = new ModelView("details.jsp");
+        mv.getRemoveSession().add("id");
+        mv.setInvalidateSession(true);
         for (Employe employe : list) {
             if (employe.getId() == id) {
                 mv.addItemData("employe", employe);

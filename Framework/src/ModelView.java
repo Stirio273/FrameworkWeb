@@ -5,8 +5,10 @@
  */
 package etu1832.framework;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 /**
  *
@@ -17,6 +19,8 @@ public class ModelView {
     HashMap<String, Object> data;
     HashMap<String, Object> session;
     boolean JSON;
+    boolean invalidateSession;
+    List<String> removeSession;
 
     public String getVue() {
         return vue;
@@ -50,10 +54,27 @@ public class ModelView {
         JSON = jSON;
     }
 
+    public boolean isInvalidateSession() {
+        return invalidateSession;
+    }
+
+    public void setInvalidateSession(boolean invalidateSession) {
+        this.invalidateSession = invalidateSession;
+    }
+
+    public List<String> getRemoveSession() {
+        return removeSession;
+    }
+
+    public void setRemoveSession(List<String> removeSession) {
+        this.removeSession = removeSession;
+    }
+
     public ModelView(String vue) {
         this.vue = vue;
         this.data = new HashMap<>();
         this.session = new HashMap<>();
+        this.removeSession = new ArrayList<String>();
     }
 
     public ModelView(String vue, HashMap<String, Object> data) {
