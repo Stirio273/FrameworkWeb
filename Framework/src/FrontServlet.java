@@ -5,10 +5,12 @@
  */
 package etu1832.framework.servlet;
 
+import etu1832.framework.Model;
 import etu1832.framework.FileUpload;
 import etu1832.framework.Mapping;
 import etu1832.framework.ModelView;
 import etu1832.framework.annotation.Authentification;
+import etu1832.framework.annotation.RequestParams;
 import etu1832.framework.annotation.ResponseBody;
 import etu1832.framework.annotation.SessionAttribute;
 
@@ -79,6 +81,11 @@ public class FrontServlet extends HttpServlet {
 
     public void sessionFromMVToHttp(Object mv, HttpSession session) {
         if (mv instanceof ModelView) {
+            this.removeAttributeSession(session, (ModelView) mv);
+            System.out.println(session.getAttribute("role"));
+            if (((ModelView) mv).isInvalidateSession() == true) {
+                session.invalidate();
+            }
             if (((ModelView) mv).getSession() == null || ((ModelView) mv).getSession().isEmpty()) {
                 return;
             }
@@ -205,12 +212,7 @@ public class FrontServlet extends HttpServlet {
         Object[] params = new Object[arguments.length];
         for (int i = 0; i < arguments.length; i++) {
             String value = null;
-            if (arguments[i].getAnnotation(SessionAttribute.class) != null) {
-                value = request.getSession().getAttribute(arguments[i].getAnnotation(SessionAttribute.class).value())
-                        .toString();
-            } else {
-                value = request.getParameter(arguments[i].getName());
-            }
+            value = request.getParameter(arguments[i].getAnnotation(RequestParams.class).value());
             System.out.println(arguments[i].getName());
             if (value != null) {
                 params[i] = Util.castString(value, arguments[i].getType());
@@ -236,6 +238,28 @@ public class FrontServlet extends HttpServlet {
 
     public boolean isResponseBody(Method fonction) {
         return fonction.getAnnotation(ResponseBody.class) != null;
+    }
+
+    public void fromHttpSessionToAttribute(HttpSession session, Object o, Method fonction) {
+        if (fonction.getAnnotation(SessionAttribute.class) != null) {
+            System.out.println("From Session");
+            Enumeration<String> keyNames = session.getAttributeNames();
+            while (keyNames.hasMoreElements()) {
+                String key = keyNames.nextElement();
+                ((Model) o).addItem(key, session.getAttribute(key));
+            }
+        }
+    }
+
+    public void removeAttributeSession(HttpSession session, ModelView mv) {
+        if (mv.getRemoveSession() == null) {
+            return;
+        }
+        for (String attr : mv.getRemoveSession()) {
+            System.out.println("Avant " + session.getAttribute(attr));
+            session.removeAttribute(attr);
+            System.out.println("Apres " + session.getAttribute(attr));
+        }
     }
 
     /**
@@ -266,6 +290,7 @@ public class FrontServlet extends HttpServlet {
             this.authentificate(request, fonction);
             this.fillAttributeOfObject(o, request);
             Object[] params = this.fillArgumentsOfFonction(fonction, request);
+            this.fromHttpSessionToAttribute(request.getSession(), o, fonction);
             Object reponse = callModelAndFunction(o, fonction, params, map);
             this.sessionFromMVToHttp(reponse, request.getSession());
             this.setAttributeRequest(request, reponse);
